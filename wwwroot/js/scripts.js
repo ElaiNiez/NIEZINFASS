@@ -6,6 +6,7 @@
 //
 // Scripts
 // 
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 window.addEventListener('DOMContentLoaded', event => {
 
@@ -40,8 +41,9 @@ window.addEventListener('DOMContentLoaded', event => {
 
     // Collapse responsive navbar when toggler is visible
     const navbarToggler = document.body.querySelector('.navbar-toggler');
+    // Change .nav-link to only target links containing '#'
     const responsiveNavItems = [].slice.call(
-        document.querySelectorAll('#navbarResponsive .nav-link')
+        document.querySelectorAll('#navbarResponsive .nav-link[href*="#"]')
     );
     responsiveNavItems.map(function (responsiveNavItem) {
         responsiveNavItem.addEventListener('click', () => {

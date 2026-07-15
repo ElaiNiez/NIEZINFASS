@@ -1,0 +1,108 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Registration";
+}
+
+<div style="height: 120px;"></div>
+
+<section class="page-section">
+    <div class="container">
+        <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">Register</h2>
+        <div class="divider-custom">
+            <div class="divider-custom-line"></div>
+            <div class="divider-custom-icon"><i class="fas fa-user-plus"></i></div>
+            <div class="divider-custom-line"></div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-xl-5">
+                <form id="registerForm" method="post">
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="fullName" type="text" placeholder="Full Name" required />
+                        <label for="fullName">Full Name</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="email" type="email" placeholder="name@example.com" required />
+                        <label for="email">Email address</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="password" type="password" placeholder="Password" required />
+                        <label for="password">Password</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="confirmPassword" type="password" placeholder="Confirm Password" required />
+                        <label for="confirmPassword">Confirm Password</label>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <button class="btn btn-primary btn-xl" type="submit">Register</button>
+                        <a class="text-secondary" href="@Url.Action("Login", "Home")">Already registered? Log in</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+@section Scripts{
+<script>
+
+$(document).ready(function () {
+
+    $("#registerForm").submit(function (e) {
+
+        e.preventDefault();
+
+        if ($("#password").val() != $("#confirmPassword").val()) {
+            alert("Passwords do not match.");
+            return;
+        }
+
+        $.ajax({
+
+            url: "/Account/Register",
+
+            type: "POST",
+
+            data: {
+
+                FullName: $("#fullName").val(),
+
+                Email: $("#email").val(),
+
+                Password: $("#password").val()
+
+            },
+
+            success: function (response) {
+
+                if (response.success) {
+
+                    alert(response.message);
+
+                    window.location.href = "/Login";
+
+                }
+                else {
+
+                    alert(response.message);
+
+                }
+
+            },
+
+            error: function (xhr) {
+
+                console.log(xhr.responseText);
+
+                alert("Registration Failed.");
+
+            }
+
+        });
+
+    });
+
+});
+
+</script>
+}
