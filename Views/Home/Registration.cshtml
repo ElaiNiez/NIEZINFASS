@@ -52,11 +52,33 @@ $(document).ready(function () {
 
         e.preventDefault();
 
-        if ($("#password").val() != $("#confirmPassword").val()) {
+        var fullName = $("#fullName").val().trim();
+        var email = $("#email").val().trim();
+        var password = $("#password").val();
+        var confirmPassword = $("#confirmPassword").val();
+
+        // Check if all fields are filled
+        if (fullName == "" || email == "" || password == "" || confirmPassword == "") {
+            alert("Please complete all fields.");
+            return;
+        }
+
+        // Check password match
+        if (password != confirmPassword) {
             alert("Passwords do not match.");
             return;
         }
 
+        // Display entered information first
+        alert(
+            "Registration Details\n\n" +
+            "Full Name: " + fullName + "\n" +
+            "Email: " + email + "\n" +
+            "Password: " + password + "\n" +
+            "Confirm Password: " + confirmPassword
+        );
+
+        // Send to server
         $.ajax({
 
             url: "/Account/Register",
@@ -64,25 +86,22 @@ $(document).ready(function () {
             type: "POST",
 
             data: {
-
-                FullName: $("#fullName").val(),
-
-                Email: $("#email").val(),
-
-                Password: $("#password").val()
-
+                FullName: fullName,
+                Email: email,
+                Password: password
             },
 
             success: function (response) {
 
+                console.log(response);
+
                 if (response.success) {
 
-                    alert(response.message);
+                    alert("Registration Successful!");
 
-                    window.location.href = "/Login";
+                    window.location.href = "/Login?registered=true";
 
-                }
-                else {
+                } else {
 
                     alert(response.message);
 
@@ -94,7 +113,7 @@ $(document).ready(function () {
 
                 console.log(xhr.responseText);
 
-                alert("Registration Failed.");
+                alert("Registration Failed.\n\n" + xhr.responseText);
 
             }
 
@@ -105,4 +124,5 @@ $(document).ready(function () {
 });
 
 </script>
+
 }

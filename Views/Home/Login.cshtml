@@ -44,21 +44,58 @@
     </div>
 </section>
 @section Scripts {
+
     <script>
 
         $(document).ready(function () {
 
-            alert("Login page loaded");
+            const url = new URL(window.location.href);
 
-            $("#loginForm").submit(function (e) {
+            if(url.searchParams.get("registered")=="true")
+            {
+                alert("Registration Successful! Please login.");
+            }
 
-                e.preventDefault();
+        });
 
-                alert("Login button clicked");
+        $("#loginForm").submit(function(e){
+
+            e.preventDefault();
+
+            $.ajax({
+
+                url:"/Account/Login",
+
+                type:"POST",
+
+                data:{
+                    Email:$("#email").val(),
+                    Password:$("#password").val()
+                },
+
+                success:function(response){
+
+                    alert(response.message);
+
+                    if(response.success){
+
+                        window.location.href="/";
+
+                    }
+
+                },
+
+                error:function(xhr){
+
+                    alert(xhr.responseText);
+
+                }
 
             });
 
         });
 
     </script>
+
+
 }
