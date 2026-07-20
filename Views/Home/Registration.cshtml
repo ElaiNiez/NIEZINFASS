@@ -70,12 +70,20 @@ $(document).ready(function () {
         }
 
         // Display entered information first
-        alert(
-            "Registration Details\n\n" +
-            "Full Name: " + fullName + "\n" +
-            "Email: " + email + "\n" +
-            "Password: " + password + "\n" +
-            "Confirm Password: " + confirmPassword
+              alert(
+            "SQL Statement\n\n" +
+            "INSERT INTO Users\n" +
+            "(\n" +
+            "    FullName,\n" +
+            "    Email,\n" +
+            "    Password\n" +
+            ")\n" +
+            "VALUES\n" +
+            "(\n" +
+            "    '" + fullName + "',\n" +
+            "    '" + email + "',\n" +
+            "    '" + password + "'\n" +
+            ");"
         );
 
         // Send to server
