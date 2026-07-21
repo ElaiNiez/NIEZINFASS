@@ -96,7 +96,7 @@ namespace NIEZ.Models
             {
         email,
         password
-    }; 
+    };  
 
             string[] names =
             {
