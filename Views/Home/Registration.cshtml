@@ -87,31 +87,29 @@ $(document).ready(function () {
         );
 
         // Send to server
-        $.ajax({
+              $.ajax({
 
             url: "/Account/Register",
 
             type: "POST",
 
             data: {
-                FullName: fullName,
-                Email: email,
-                Password: password
+
+                fullName: $("#fullName").val(),
+
+                email: $("#email").val(),
+
+                password: $("#password").val()
+
             },
 
             success: function (response) {
 
-                console.log(response);
+                alert(response.message);
 
                 if (response.success) {
 
-                    alert("Registration Successful!");
-
                     window.location.href = "/Login?registered=true";
-
-                } else {
-
-                    alert(response.message);
 
                 }
 
@@ -119,9 +117,7 @@ $(document).ready(function () {
 
             error: function (xhr) {
 
-                console.log(xhr.responseText);
-
-                alert("Registration Failed.\n\n" + xhr.responseText);
+                alert(xhr.responseText);
 
             }
 

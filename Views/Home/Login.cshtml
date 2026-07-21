@@ -62,36 +62,39 @@
 
             e.preventDefault();
 
-            $.ajax({
+                    $.ajax({
 
-                url:"/Account/Login",
+            url: "/Account/Login",
 
-                type:"POST",
+            type: "POST",
 
-                data:{
-                    Email:$("#email").val(),
-                    Password:$("#password").val()
-                },
+            data: {
 
-                success:function(response){
+                email: $("#email").val(),
 
-                    alert(response.message);
+                password: $("#password").val()
 
-                    if(response.success){
+            },
 
-                        window.location.href="/";
+            success: function (response) {
 
-                    }
+                alert(response.message);
 
-                },
+                if (response.success) {
 
-                error:function(xhr){
-
-                    alert(xhr.responseText);
+                    window.location.href = "/";
 
                 }
 
-            });
+            },
+
+            error: function (xhr) {
+
+                alert(xhr.responseText);
+
+            }
+
+        });
 
         });
 
