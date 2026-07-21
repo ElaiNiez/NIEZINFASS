@@ -7,14 +7,38 @@ namespace NIEZ.Models
     {
         // REGISTER
         public bool Register(
-            Db db,
-            string fullName,
-            string email,
-            string password,
-            out string message)
-        { 
+    Db db,
+    string fullName,
+    string email,
+    string password,
+    out string message)
+        {
+            // Manual Validation using Arrays and For Loop
+            string[] values =
+            {
+        fullName,
+        email,
+        password
+    };
+
+            string[] names =
+            {
+        "Full Name",
+        "Email",
+        "Password"
+    };
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (string.IsNullOrWhiteSpace(values[i]))
+                {
+                    message = names[i] + " is required.";
+                    return false;
+                }
+            }
+
             try
-            { 
+            {
                 using (SqlConnection con = db.Connection())
                 {
                     con.Open();
@@ -33,9 +57,9 @@ namespace NIEZ.Models
                     }
 
                     string insertQuery = @"INSERT INTO Users
-                                           (FullName, Email, Password)
-                                           VALUES
-                                           (@FullName, @Email, @Password)";
+                                   (FullName, Email, Password)
+                                   VALUES
+                                   (@FullName,@Email,@Password)";
 
                     SqlCommand cmd = new SqlCommand(insertQuery, con);
 
@@ -55,18 +79,39 @@ namespace NIEZ.Models
                 return false;
             }
         }
-
         // LOGIN
         public bool Login(
-            Db db,
-            string email,
-            string password,
-            out int id,
-            out string fullName,
-            out string message)
+      Db db,
+      string email,
+      string password,
+      out int id,
+      out string fullName,
+      out string message)
         {
             id = 0;
             fullName = "";
+
+            // Manual Validation
+            string[] values =
+            {
+        email,
+        password
+    };
+
+            string[] names =
+            {
+        "Email",
+        "Password"
+    };
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (string.IsNullOrWhiteSpace(values[i]))
+                {
+                    message = names[i] + " is required.";
+                    return false;
+                }
+            }
 
             try
             {
@@ -74,10 +119,10 @@ namespace NIEZ.Models
                 {
                     con.Open();
 
-                    string query = @"SELECT Id, FullName, Email
-                                     FROM Users
-                                     WHERE Email=@Email
-                                     AND Password=@Password";
+                    string query = @"SELECT Id, FullName
+                             FROM Users
+                             WHERE Email=@Email
+                             AND Password=@Password";
 
                     SqlCommand cmd = new SqlCommand(query, con);
 
@@ -90,6 +135,7 @@ namespace NIEZ.Models
                     {
                         id = Convert.ToInt32(reader["Id"]);
                         fullName = reader["FullName"].ToString();
+
                         message = "Login Successful!";
                         return true;
                     }
