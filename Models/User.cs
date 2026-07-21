@@ -12,7 +12,7 @@ namespace NIEZ.Models
             string email,
             string password,
             out string message)
-        {
+        { 
             try
             {
                 using (SqlConnection con = db.Connection())
