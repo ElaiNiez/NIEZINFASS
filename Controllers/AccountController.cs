@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using NIEZ.Models;
 using NIEZ.Service;
 
@@ -13,7 +12,7 @@ namespace NIEZ.Controllers
         {
             _db = db;
         }
-         
+
         // ==========================
         // REGISTER
         // ==========================
@@ -21,6 +20,8 @@ namespace NIEZ.Controllers
         public JsonResult Register(string fullName, string email, string password)
         {
             User user = new User();
+
+         
 
             string message;
 
@@ -78,7 +79,6 @@ namespace NIEZ.Controllers
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
-
             return RedirectToAction("Login", "Home");
         }
     }

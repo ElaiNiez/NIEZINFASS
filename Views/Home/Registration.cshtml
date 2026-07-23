@@ -43,90 +43,65 @@
         </div>
     </div>
 </section>
-@section Scripts{
-<script>
+@section Scripts {
+    <script>
 
-$(document).ready(function () {
+                         $(document).ready(function () {
 
-    $("#registerForm").submit(function (e) {
+                             $("#registerForm").submit(function (e) {
 
-        e.preventDefault();
+                                 e.preventDefault();
 
-        var fullName = $("#fullName").val().trim();
-        var email = $("#email").val().trim();
-        var password = $("#password").val();
-        var confirmPassword = $("#confirmPassword").val();
+                                 var password = $("#password").val();
+                                 var confirmPassword = $("#confirmPassword").val();
 
-        // Check if all fields are filled
-        if (fullName == "" || email == "" || password == "" || confirmPassword == "") {
-            alert("Please complete all fields.");
-            return;
-        }
+                                 if (password != confirmPassword) {
 
-        // Check password match
-        if (password != confirmPassword) {
-            alert("Passwords do not match.");
-            return;
-        }
+                                     alert("Passwords do not match.");
+                                     return;
 
-        // Display entered information first
-              alert(
-            "SQL Statement\n\n" +
-            "INSERT INTO Users\n" +
-            "(\n" +
-            "    FullName,\n" + 
-            "    Email,\n" +
-            "    Password\n" +
-            ")\n" +
-            "VALUES\n" +
-            "(\n" + 
-            "    '" + fullName + "',\n" +
-            "    '" + email + "',\n" +
-            "    '" + password + "'\n" +
-            ");"
-        );
+                                 }
 
-        // Send to server
-              $.ajax({
+                                 $.ajax({
 
-            url: "/Account/Register",
+                                     url: "/Account/Register",
 
-            type: "POST",
+                                     type: "POST",
 
-            data: {
+                                     data: {
 
-                fullName: $("#fullName").val(),
+                                         fullName: $("#fullName").val(),
 
-                email: $("#email").val(),
+                                         email: $("#email").val(),
 
-                password: $("#password").val()
+                                         password: $("#password").val()
 
-            },
+                                     },
 
-            success: function (response) {
+                                     success: function (response) {
 
-                alert(response.message);
+                                         alert(response.message);
 
-                if (response.success) {
+                                         if (response.success) {
 
-                    window.location.href = "/Login?registered=true";
+                                             window.location.href = "/Home/Login?registered=true";
 
-                }
+                                         }
 
-            },
+                                     },
 
-            error: function (xhr) {
+                                     error: function (xhr) {
 
-                alert(xhr.responseText);
+                                         alert(xhr.responseText);
 
-            }
+                                     }
 
-        });
+                                 });
 
-    });
+                             });
 
-});
+                         });
 
-</script>
+    </script>
 
 }

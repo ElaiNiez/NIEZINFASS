@@ -44,57 +44,55 @@
     </div>
 </section>
 @section Scripts {
-
     <script>
 
         $(document).ready(function () {
 
             const url = new URL(window.location.href);
 
-            if(url.searchParams.get("registered")=="true")
-            {
+            if (url.searchParams.get("registered") == "true") {
                 alert("Registration Successful! Please login.");
             }
 
-        });
+            $("#loginForm").submit(function (e) {
 
-        $("#loginForm").submit(function(e){
+                e.preventDefault();
 
-            e.preventDefault();
+                $.ajax({
 
-                    $.ajax({
+                    url: "/Account/Login",
 
-            url: "/Account/Login",
+                    type: "POST",
 
-            type: "POST",
+                    data: {
 
-            data: {
+                        email: $("#email").val(),
 
-                email: $("#email").val(),
+                        password: $("#password").val()
 
-                password: $("#password").val()
+                    },
 
-            },
+                    success: function (response) {
 
-            success: function (response) {
+                        alert(response.message);
 
-                alert(response.message);
+                        if (response.success) {
 
-                if (response.success) {
+                            window.location.href = "/";
 
-                    window.location.href = "/";
+                        }
 
-                }
+                    },
 
-            },
+                    error: function (xhr) {
 
-            error: function (xhr) {
+                        alert(xhr.responseText);
 
-                alert(xhr.responseText);
+                    }
 
-            }
+                });
 
-        }); 
+            });
 
         });
 
