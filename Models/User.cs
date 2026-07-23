@@ -5,61 +5,91 @@ namespace NIEZ.Models
 {
     public class User
     {
+
+
         //==========================================================
-        // DYNAMIC VALIDATION METHOD
+        // DYNAMIC VALIDATION
+        //
+        // Works with any number of fields
+        //
         //==========================================================
+
         private bool ValidateFields(
-        string valueString,
-        string fieldString,
-        out string message)
+            string[] values,
+            string[] fields,
+            out string message)
         {
-            string[] values = valueString.Split('|');
-            string[] fields = fieldString.Split('|');
+
 
             for (int i = 0; i < values.Length; i++)
             {
+
                 if (string.IsNullOrWhiteSpace(values[i]))
                 {
-                    message = fields[i] + " is required.";
+
+                    message =
+                    fields[i] + " is required.";
+
                     return false;
+
                 }
+
             }
 
+
             message = "";
+
             return true;
+
         }
+
+
+
+
 
         //==========================================================
         // DYNAMIC SQL PREVIEW
+        //
+        // Works for any table
+        //
         //==========================================================
 
-        private string BuildInsertStatement(
-        string table,
-        string columns,
-        string values)
-        {
-            string[] columnArray = columns.Split(',');
-            string[] valueArray = values.Split(',');
 
+        private string BuildInsertStatement(
+            string table,
+            string[] columns,
+            string[] values)
+        {
 
             string sql = "";
 
+
+
             sql += "INSERT INTO " + table + "\n";
+
+
             sql += "(\n";
 
 
-            // COLUMNS
-            for (int i = 0; i < columnArray.Length; i++)
-            {
-                sql += "    " + columnArray[i].Trim();
 
-                if (i < columnArray.Length - 1)
+            // DISPLAY COLUMNS
+
+            for (int i = 0; i < columns.Length; i++)
+            {
+
+                sql += "    " + columns[i];
+
+
+                if (i < columns.Length - 1)
                 {
                     sql += ",";
                 }
 
+
                 sql += "\n";
+
             }
+
 
 
             sql += ")\n";
@@ -71,30 +101,161 @@ namespace NIEZ.Models
             sql += "(\n";
 
 
-            // VALUES
-            for (int i = 0; i < valueArray.Length; i++)
-            {
-                sql += "    '" + valueArray[i].Trim() + "'";
 
-                if (i < valueArray.Length - 1)
+            // DISPLAY VALUES
+
+            for (int i = 0; i < values.Length; i++)
+            {
+
+                sql += "    '" + values[i] + "'";
+
+
+                if (i < values.Length - 1)
                 {
                     sql += ",";
                 }
 
+
                 sql += "\n";
+
             }
+
 
 
             sql += ");";
 
 
+
             return sql;
+
         }
+
+
+        public bool Insert(
+            Db db,
+            string table,
+            string[] columns,
+            string[] values,
+            out string message)
+        {
+
+
+            try
+            {
+
+                using (SqlConnection con = db.Connection())
+                {
+
+                    con.Open();
+
+
+
+                    string query =
+                    "INSERT INTO " + table + " (";
+
+
+
+
+                    // CREATE COLUMN PART
+
+                    for (int i = 0; i < columns.Length; i++)
+                    {
+
+                        query += columns[i];
+
+
+                        if (i < columns.Length - 1)
+                        {
+                            query += ",";
+                        }
+
+                    }
+
+
+
+                    query += ") VALUES (";
+
+
+
+
+                    // CREATE PARAMETER PART
+
+                    for (int i = 0; i < values.Length; i++)
+                    {
+
+                        query += "@value" + i;
+
+
+                        if (i < values.Length - 1)
+                        {
+                            query += ",";
+                        }
+
+                    }
+
+
+
+                    query += ")";
+
+
+
+
+                    SqlCommand cmd =
+                    new SqlCommand(query, con);
+
+
+
+
+                    // ADD VALUES
+
+                    for (int i = 0; i < values.Length; i++)
+                    {
+
+                        cmd.Parameters.AddWithValue(
+                            "@value" + i,
+                            values[i]);
+
+                    }
+
+
+
+
+                    cmd.ExecuteNonQuery();
+
+
+
+
+                    message =
+                    BuildInsertStatement(
+                        table,
+                        columns,
+                        values);
+
+                    return true;
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                message = ex.Message;
+
+                return false;
+
+            }
+
+        }
+
+
+
 
 
         //==========================================================
         // REGISTER
         //==========================================================
+
+
         public bool Register(
             Db db,
             string fullName,
@@ -104,86 +265,130 @@ namespace NIEZ.Models
         {
 
 
+
+            string[] values =
+            {
+                fullName,
+                email,
+                password
+            };
+
+
+            string[] fields =
+            {
+                "Full Name",
+                "Email",
+                "Password"
+            };
+
+
+
             if (!ValidateFields(
-     fullName + "|" + email + "|" + password,
-     "Full Name|Email|Password",
-     out message))
+                values,
+                fields,
+                out message))
             {
                 return false;
             }
+
+
+
 
             try
             {
+
                 using (SqlConnection con = db.Connection())
                 {
+
                     con.Open();
 
-                    string checkQuery =
-                        "SELECT COUNT(*) FROM Users WHERE Email=@Email";
+
+
+                    string check =
+                    "SELECT COUNT(*) FROM Users WHERE Email=@Email";
+
+
 
                     SqlCommand checkCmd =
-                        new SqlCommand(checkQuery, con);
+                    new SqlCommand(check, con);
 
-                    checkCmd.Parameters.AddWithValue("@Email", email);
+
+
+                    checkCmd.Parameters.AddWithValue(
+                        "@Email",
+                        email);
+
+
 
                     int count =
-                        Convert.ToInt32(checkCmd.ExecuteScalar());
+                    Convert.ToInt32(
+                    checkCmd.ExecuteScalar());
+
+
 
                     if (count > 0)
                     {
-                        message = "Email already exists.";
+
+                        message =
+                        "Email already exists.";
+
                         return false;
+
                     }
 
-                    string insertQuery =
-                    @"INSERT INTO Users
-                    (
-                        FullName,
-                        Email,
-                        Password
-                    )
-                    VALUES
-                    (
-                        @FullName,
-                        @Email,
-                        @Password
-                    )";
-
-                    SqlCommand cmd =
-                        new SqlCommand(insertQuery, con);
-
-                    cmd.Parameters.AddWithValue("@FullName", fullName);
-                    cmd.Parameters.AddWithValue("@Email", email);
-                    cmd.Parameters.AddWithValue("@Password", password);
-
-                    cmd.ExecuteNonQuery();
-                    message = BuildInsertStatement(
-
-    "Users",
-
-    "FullName,Email,Password",
-
-    fullName + "," +
-    email + "," +
-    password
-
-);
 
 
-                    message += "\n\nRegistration Successful!";
-                    return true;
                 }
+
+
+
+                // USE UNIVERSAL INSERT METHOD
+
+                string[] columns =
+                {
+                    "FullName",
+                    "Email",
+                    "Password"
+                };
+
+
+
+                bool result =
+                Insert(
+                    db,
+                    "Users",
+                    columns,
+                    values,
+                    out message);
+
+
+
+                if (result)
+                {
+
+                    message +=
+                    "\n\nRegistration Successful!";
+
+                }
+
+
+
+                return result;
+
+
             }
             catch (Exception ex)
             {
+
                 message = ex.Message;
+
                 return false;
+
             }
+
         }
 
-        //==========================================================
-        // LOGIN
-        //==========================================================
+
         public bool Login(
             Db db,
             string email,
@@ -192,60 +397,107 @@ namespace NIEZ.Models
             out string fullName,
             out string message)
         {
+
+
             id = 0;
+
             fullName = "";
+
+
+
+            string[] values =
+            {
+                email,
+                password
+            };
+
+
+            string[] fields =
+            {
+                "Email",
+                "Password"
+            };
+
+
+
             if (!ValidateFields(
-                email + "|" + password,
-                "Email|Password",
+                values,
+                fields,
                 out message))
             {
                 return false;
             }
 
-            try
+
+
+            using (SqlConnection con = db.Connection())
             {
-                using (SqlConnection con = db.Connection())
+
+                con.Open();
+
+
+
+                string query =
+                @"SELECT Id,FullName
+                  FROM Users
+                  WHERE Email=@Email
+                  AND Password=@Password";
+
+
+
+                SqlCommand cmd =
+                new SqlCommand(query, con);
+
+
+
+                cmd.Parameters.AddWithValue(
+                    "@Email",
+                    email);
+
+
+
+                cmd.Parameters.AddWithValue(
+                    "@Password",
+                    password);
+
+
+
+                SqlDataReader reader =
+                cmd.ExecuteReader();
+
+
+
+                if (reader.Read())
                 {
-                    con.Open();
 
-                    string query =
-                    @"SELECT Id,
-                             FullName
-                      FROM Users
-                      WHERE Email=@Email
-                      AND Password=@Password";
+                    id =
+                    Convert.ToInt32(
+                    reader["Id"]);
 
-                    SqlCommand cmd =
-                        new SqlCommand(query, con);
 
-                    cmd.Parameters.AddWithValue("@Email", email);
-                    cmd.Parameters.AddWithValue("@Password", password);
 
-                    SqlDataReader reader =
-                        cmd.ExecuteReader();
+                    fullName =
+                    reader["FullName"].ToString();
 
-                    if (reader.Read())
-                    {
-                        id =
-                            Convert.ToInt32(reader["Id"]);
 
-                        fullName =
-                            reader["FullName"].ToString();
 
-                        message = "Login Successful!";
+                    message =
+                    "Login Successful!";
 
-                        return true;
-                    }
 
-                    message = "Invalid Email or Password.";
-                    return false;
+                    return true;
+
                 }
-            }
-            catch (Exception ex)
-            {
-                message = ex.Message;
+                message =
+                "Invalid Email or Password.";
+
+
                 return false;
+
             }
+
         }
+
+
     }
 }
