@@ -75,51 +75,134 @@ namespace NIEZ.Models
             }
         }
         //==========================================================
-        // BUILD INSERT PREVIEW
+        // BUILD SQL STATEMENT
+        //
+        // Dynamically builds INSERT, SELECT,
+        // UPDATE, and DELETE queries.
+        //
+        // This method is reused by all CRUD methods.
+        //
         //==========================================================
-        private string BuildInsertStatement(
+
+        private string BuildStatement(
+            string action,
             string table,
             string[] columns,
-            string[] values)
+            string[] values,
+            string whereColumn = "")
         {
             string sql = "";
 
-            sql += "INSERT INTO " + table + "\n";
-            sql += "(\n";
-
-            for (int i = 0; i < columns.Length; i++)
+            switch (action.ToUpper())
             {
-                sql += "    " + columns[i];
+                //==================================================
+                // INSERT
+                //==================================================
 
-                if (i < columns.Length - 1)
-                    sql += ",";
+                case "INSERT":
 
-                sql += "\n";
+                    sql += "INSERT INTO " + table + " (";
+
+                    for (int i = 0; i < columns.Length; i++)
+                    {
+                        sql += columns[i];
+
+                        if (i < columns.Length - 1)
+                            sql += ",";
+                    }
+
+                    sql += ") VALUES (";
+
+                    for (int i = 0; i < values.Length; i++)
+                    {
+                        sql += "@value" + i;
+
+                        if (i < values.Length - 1)
+                            sql += ",";
+                    }
+
+                    sql += ")";
+
+                    break;
+
+                //==================================================
+                // SELECT
+                //==================================================
+
+                case "SELECT":
+
+                    sql += "SELECT ";
+
+                    if (columns.Length == 0)
+                    {
+                        sql += "*";
+                    }
+                    else
+                    {
+                        for (int i = 0; i < columns.Length; i++)
+                        {
+                            sql += columns[i];
+
+                            if (i < columns.Length - 1)
+                                sql += ",";
+                        }
+                    }
+
+                    sql += " FROM " + table;
+
+                    break;
+
+                //==================================================
+                // UPDATE
+                //==================================================
+
+                case "UPDATE":
+
+                    sql += "UPDATE " + table + " SET ";
+
+                    for (int i = 0; i < columns.Length; i++)
+                    {
+                        sql += columns[i] + "=@value" + i;
+
+                        if (i < columns.Length - 1)
+                            sql += ",";
+                    }
+
+                    sql += " WHERE " + whereColumn + "=@id";
+
+                    break;
+
+                //==================================================
+                // DELETE
+                //==================================================
+
+                case "DELETE":
+
+                    sql +=
+                        "DELETE FROM " +
+                        table +
+                        " WHERE " +
+                        whereColumn +
+                        "=@id";
+
+                    break;
             }
-            sql += ")\nVALUES\n(\n";
-
-            for (int i = 0; i < values.Length; i++)
-            {
-                sql += "    '" + values[i] + "'";
-
-                if (i < values.Length - 1)
-                    sql += ",";
-
-                sql += "\n";
-            }
-
-            sql += ");";
 
             return sql;
-        }
-        //==========================================================
-        // UNIVERSAL INSERT
-        //==========================================================
+        }//==========================================================
+         // EXECUTE NON QUERY
+         //
+         // Used by:
+         //      INSERT
+         //      UPDATE
+         //      DELETE
+         //
+         //==========================================================
 
-        public bool Insert(
+        private bool ExecuteNonQuery(
             Db db,
-            string table,
-            string[] columns,
+            string query,
+            string[] parameterNames,
             string[] values,
             out string message)
         {
@@ -127,35 +210,6 @@ namespace NIEZ.Models
             {
                 using (SqlConnection con = OpenConnection(db))
                 {
-                    string query =
-                        "INSERT INTO " + table + " (";
-
-                    for (int i = 0; i < columns.Length; i++)
-                    {
-                        query += columns[i];
-
-                        if (i < columns.Length - 1)
-                            query += ",";
-                    }
-
-                    query += ") VALUES (";
-
-                    string[] parameterNames =
-                        new string[values.Length];
-
-                    for (int i = 0; i < values.Length; i++)
-                    {
-                        parameterNames[i] =
-                            "@value" + i;
-
-                        query += parameterNames[i];
-
-                        if (i < values.Length - 1)
-                            query += ",";
-                    }
-
-                    query += ")";
-
                     SqlCommand cmd =
                         new SqlCommand(query, con);
 
@@ -166,11 +220,7 @@ namespace NIEZ.Models
 
                     cmd.ExecuteNonQuery();
 
-                    message =
-                        BuildInsertStatement(
-                            table,
-                            columns,
-                            values);
+                    message = query;
 
                     return true;
                 }
@@ -181,11 +231,139 @@ namespace NIEZ.Models
                 return false;
             }
         }
-        public List<Dictionary<string, object>> View(
-         Db db,
-         string table,
-         string[] columns,
-          out string message)
+        //==========================================================
+        // INSERT
+        //
+        // Works for ANY TABLE.
+        //
+        //==========================================================
+
+        public bool Insert(
+            Db db,
+            string table,
+            string[] columns,
+            string[] values,
+            out string message)
+        {
+            string query =
+                BuildStatement(
+                    "INSERT",
+                    table,
+                    columns,
+                    values);
+
+            string[] names =
+                new string[values.Length];
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                names[i] =
+                    "@value" + i;
+            }
+
+            return ExecuteNonQuery(
+                db,
+                query,
+                names,
+                values,
+                out message);
+        }
+        //==========================================================
+        // UPDATE
+        //
+        // Works for ANY TABLE.
+        //
+        //==========================================================
+
+        public bool Update(
+            Db db,
+            string table,
+            string[] columns,
+            string[] values,
+            string whereColumn,
+            string id,
+            out string message)
+        {
+            string query =
+                BuildStatement(
+                    "UPDATE",
+                    table,
+                    columns,
+                    values,
+                    whereColumn);
+
+            string[] names =
+                new string[values.Length + 1];
+
+            string[] data =
+                new string[values.Length + 1];
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                names[i] =
+                    "@value" + i;
+
+                data[i] =
+                    values[i];
+            }
+
+            names[values.Length] = "@id";
+            data[values.Length] = id;
+
+            return ExecuteNonQuery(
+                db,
+                query,
+                names,
+                data,
+                out message);
+        }
+        //==========================================================
+        // DELETE
+        //
+        // Works for ANY TABLE.
+        //
+        //==========================================================
+
+        public bool Delete(
+            Db db,
+            string table,
+            string whereColumn,
+            string id,
+            out string message)
+        {
+            string query =
+                BuildStatement(
+                    "DELETE",
+                    table,
+                    new string[0],
+                    new string[0],
+                    whereColumn);
+
+            return ExecuteNonQuery(
+                db,
+                query,
+                new[]
+                {
+            "@id"
+                },
+                new[]
+                {
+            id
+                },
+                out message);
+        }
+        //==========================================================
+        // SELECT
+        //
+        // Works for ANY TABLE.
+        //
+        //==========================================================
+
+        public List<Dictionary<string, object>> Select(
+            Db db,
+            string table,
+            string[] columns,
+            out string message)
         {
             List<Dictionary<string, object>> rows =
                 new List<Dictionary<string, object>>();
@@ -196,24 +374,12 @@ namespace NIEZ.Models
             {
                 using (SqlConnection con = OpenConnection(db))
                 {
-                    string query = "SELECT ";
-
-                    if (columns.Length == 0)
-                    {
-                        query += "*";
-                    }
-                    else
-                    {
-                        for (int i = 0; i < columns.Length; i++)
-                        {
-                            query += columns[i];
-
-                            if (i < columns.Length - 1)
-                                query += ",";
-                        }
-                    }
-
-                    query += " FROM " + table;
+                    string query =
+                        BuildStatement(
+                            "SELECT",
+                            table,
+                            columns,
+                            new string[0]);
 
                     SqlCommand cmd =
                         new SqlCommand(query, con);
