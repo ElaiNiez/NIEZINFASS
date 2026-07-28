@@ -275,47 +275,37 @@ namespace NIEZ.Models
         //
         //==========================================================
 
-        public bool Update(
-            Db db,
-            string table,
-            string[] columns,
-            string[] values,
-            string whereColumn,
+        //==========================================================
+        // UPDATE USER
+        //==========================================================
+        public bool UpdateUser(
             string id,
             out string message)
         {
-            string query =
-                BuildStatement(
-                    "UPDATE",
-                    table,
-                    columns,
-                    values,
-                    whereColumn);
-
-            string[] names =
-                new string[values.Length + 1];
-
-            string[] data =
-                new string[values.Length + 1];
-
-            for (int i = 0; i < values.Length; i++)
+            string[] columns =
             {
-                names[i] =
-                    "@value" + i;
+        "FullName",
+        "Email",
+        "Password"
+    };
 
-                data[i] =
-                    values[i];
-            }
+            string[] values =
+            {
+        "John Doe",
+        "john@gmail.com",
+        "123456"
+    };
 
-            names[values.Length] = "@id";
-            data[values.Length] = id;
+            message = BuildStatement(
+                "UPDATE",
+                "Users",
+                columns,
+                values,
+                "Id");
 
-            return ExecuteNonQuery(
-                db,
-                query,
-                names,
-                data,
-                out message);
+            message = message.Replace("@id", id);
+
+            return true;
         }
         //==========================================================
         // DELETE
@@ -324,33 +314,37 @@ namespace NIEZ.Models
         //
         //==========================================================
 
-        public bool Delete(
-            Db db,
-            string table,
-            string whereColumn,
+        //==========================================================
+        // DELETE USER
+        //==========================================================
+        public bool DeleteUser(
             string id,
             out string message)
         {
-            string query =
-                BuildStatement(
-                    "DELETE",
-                    table,
-                    new string[0],
-                    new string[0],
-                    whereColumn);
+            message = BuildStatement(
+                "DELETE",
+                "Users",
+                new string[0],
+                new string[0],
+                "Id");
 
-            return ExecuteNonQuery(
-                db,
-                query,
-                new[]
-                {
-            "@id"
-                },
-                new[]
-                {
-            id
-                },
-                out message);
+            message = message.Replace("@id", id);
+
+            return true;
+        }
+        //==========================================================
+        // VIEW USERS
+        //==========================================================
+        public bool ViewUsers(
+            out string message)
+        {
+            message = BuildStatement(
+                "SELECT",
+                "Users",
+                new string[0],
+                new string[0]);
+
+            return true;
         }
         //==========================================================
         // SELECT
@@ -425,39 +419,41 @@ namespace NIEZ.Models
         {
             string[] values =
             {
-                fullName,
-                email,
-                password
-            };
+        fullName,
+        email,
+        password
+    };
+
             string[] fields =
             {
-                "Full Name",
-                "Email",
-                "Password"
-            };
-            if (!ValidateFields(
-                values,
-                fields,
-                out message))
+        "Full Name",
+        "Email",
+        "Password"
+    };
+
+            if (!ValidateFields(values, fields, out message))
             {
                 return false;
             }
-            if (Exists(
-                db,
-                "Users",
-                "Email",
-                email))
+
+            if (Exists(db, "Users", "Email", email))
             {
                 message = "Email already exists.";
                 return false;
             }
+
             string[] columns =
             {
-                "FullName",
-                "Email",
-                "Password"
-            };
+        "FullName",
+        "Email",
+        "Password"
+    };
 
+            //==================================================
+            // ACTUAL INSERT
+            //==================================================
+
+            /*
             if (!Insert(
                 db,
                 "Users",
@@ -467,11 +463,22 @@ namespace NIEZ.Models
             {
                 return false;
             }
+            */
+
+            //==================================================
+            // SHOW INSERT QUERY
+            //==================================================
+
+            message = BuildStatement(
+                "INSERT",
+                "Users",
+                columns,
+                values);
 
             message += "\n\nRegistration Successful!";
+
             return true;
         }
-
         //==========================================================
         // LOGIN
         //==========================================================

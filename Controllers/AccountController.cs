@@ -112,6 +112,99 @@ namespace NIEZ.Controllers
             });
 
         }
+        // ==========================
+        // UNIVERSAL SELECT
+        //
+        // Used for any table
+        //
+        // ==========================
+
+        [HttpGet]
+        public JsonResult Select(
+            string table,
+            string[] columns)
+        {
+            User user = new User();
+
+            string message;
+
+            var data = user.Select(
+                _db,
+                table,
+                columns,
+                out message);
+
+            return Json(new
+            {
+                success = true,
+                message,
+                data
+            });
+        }
+        // ==========================
+        // UNIVERSAL DELETE
+        //
+        // Used for any table
+        //
+        // ==========================
+
+        [HttpPost]
+        public JsonResult Delete(
+            string table,
+            string whereColumn,
+            string id)
+        {
+            User user = new User();
+
+            string message;
+
+            bool success = user.Delete(
+                _db,
+                table,
+                whereColumn,
+                id,
+                out message);
+
+            return Json(new
+            {
+                success,
+                message
+            });
+        }
+        // ==========================
+        // UNIVERSAL UPDATE
+        //
+        // Used for any table
+        //
+        // ==========================
+
+        [HttpPost]
+        public JsonResult Update(
+            string table,
+            string[] columns,
+            string[] values,
+            string whereColumn,
+            string id)
+        {
+            User user = new User();
+
+            string message;
+
+            bool success = user.Update(
+                _db,
+                table,
+                columns,
+                values,
+                whereColumn,
+                id,
+                out message);
+
+            return Json(new
+            {
+                success,
+                message
+            });
+        }
 
 
 
