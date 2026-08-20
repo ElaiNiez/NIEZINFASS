@@ -1,0 +1,145 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Users";
+}
+
+<div style="height: 120px;"></div>
+
+<section class="page-section">
+
+    <div class="container">
+
+        <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">
+            Users
+        </h2>
+
+        <div class="divider-custom">
+
+            <div class="divider-custom-line"></div>
+
+            <div class="divider-custom-icon">
+                <i class="fas fa-users"></i>
+            </div>
+
+            <div class="divider-custom-line"></div>
+
+        </div>
+
+
+        <div class="card shadow">
+
+            <div class="card-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-hover">
+
+                        <thead class="table-dark">
+
+                            <tr>
+                                <th>ID</th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="userTable">
+
+                            <tr>
+                                <td colspan="3" class="text-center">
+                                    Loading...
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+@section Scripts {
+
+    <script>
+
+        $(document).ready(function () {
+
+            loadUsers();
+
+        });
+
+
+        function loadUsers() {
+
+            $.ajax({
+
+                // JSON endpoint
+                url: "/Account/GetUsers",
+
+                type: "GET",
+
+                success: function (response) {
+
+                    // See JSON in browser console
+                    console.log("JSON received:", response);
+
+
+                    if (!response.success) {
+
+                        alert(response.message);
+
+                        return;
+
+                    }
+
+
+                    let html = "";
+
+
+                    // Process JSON array
+                    response.data.forEach(function (user) {
+
+                        html += `
+                            <tr>
+
+                                <td>${user.id}</td>
+
+                                <td>${user.fullName}</td>
+
+                                <td>${user.email}</td>
+
+                            </tr>
+                        `;
+
+                    });
+
+
+                    // Put processed data into table
+                    $("#userTable").html(html);
+
+                },
+
+                error: function (xhr) {
+
+                    console.log(xhr.responseText);
+
+                    alert("Error loading users.");
+
+                }
+
+            });
+
+        }
+
+    </script>
+
+}

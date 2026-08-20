@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using NIEZ.Models;
 using NIEZ.Service;
 
@@ -72,7 +73,51 @@ namespace NIEZ.Controllers
                 message
             });
         }
+        [HttpGet]
+        public IActionResult GetUsers()
+        {
+            try
+            {
+                using (SqlConnection con = _db.Connection())
+                {
+                    con.Open();
 
+                    string query = @"
+                SELECT Id, FullName, Email
+                FROM Users";
+
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        List<object> users = new List<object>();
+
+                        while (reader.Read())
+                        {
+                            users.Add(new
+                            {
+                                id = Convert.ToInt32(reader["Id"]),
+                                fullName = reader["FullName"].ToString(),
+                                email = reader["Email"].ToString()
+                            });
+                        }
+
+                        return Json(new
+                        {
+                            success = true,
+                            data = users
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
 
         //==========================================================
         // LOGOUT

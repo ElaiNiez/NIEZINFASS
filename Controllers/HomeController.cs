@@ -37,6 +37,18 @@ namespace NIEZ.Controllers
         {
             return View();
         }
-       
+        public IActionResult User()
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Home");
+            }
+
+            return View();
+        }
+
+      
     }
 }
